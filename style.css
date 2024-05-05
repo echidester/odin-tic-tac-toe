@@ -1,0 +1,13 @@
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 200px);
+  gap: 5px;
+  width: 100vw;
+  padding-top: 50px;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  height: 200px;
+}
