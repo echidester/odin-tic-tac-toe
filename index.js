@@ -24,7 +24,7 @@ function Gameboard() {
 }
 
 function Square() {
-  let value = "--";
+  let value = "";
 
   const updateValue = (player) => (value = player);
 
@@ -69,10 +69,14 @@ function GameController(
           switchPlayer();
           board.printBoard();
           console.log(`It's ${activePlayer.name}'s turn.`);
+          return fullBoard;
+        } else {
+          return fullBoard;
         }
       } else {
         board.printBoard();
         console.log(`It's ${activePlayer.name}'s turn.`);
+        return fullBoard;
       }
     }
   };
@@ -105,7 +109,7 @@ function GameController(
         board.printBoard();
         console.log(`${activePlayer.name} wins!`);
         gameActive = false;
-        return true;
+        return fullBoard;
       }
     }
 
@@ -126,7 +130,7 @@ function GameController(
       board.printBoard();
       console.log(`${activePlayer.name} wins!`);
       gameActive = false;
-      return true;
+      return fullBoard;
     }
   };
 
@@ -139,19 +143,40 @@ function GameController(
 
 const ScreenController = () => {
   const board = Gameboard();
-  const fullBoard = board.getBoard();
+  const game = GameController();
   const containerDiv = document.querySelector(".container");
 
-  const displayBoard = () =>
-    fullBoard.map((row) =>
-      row.map((square) => {
+  const displayBoard = (board) => {
+    // drop previous board
+    let updatedBoard;
+
+    containerDiv.innerHTML = "";
+
+    // build current board
+    board.map((row, rowIndex) =>
+      row.map((square, colIndex) => {
         const newBtn = document.createElement("button");
         newBtn.textContent = square.getValue();
+        newBtn.classList = `row-${rowIndex} col-${colIndex}`;
         containerDiv.appendChild(newBtn);
       })
     );
 
-  displayBoard();
+    // Event Listeners
+    const btns = document.querySelectorAll("button");
+
+    btns.forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const rowIndex = btn.classList[0].slice(-1);
+        const colIndex = btn.classList[1].slice(-1);
+
+        updatedBoard = game.playRound(rowIndex, colIndex);
+        displayBoard(updatedBoard);
+      })
+    );
+  };
+
+  displayBoard(board.getBoard());
 
   return { displayBoard };
 };
