@@ -40,6 +40,7 @@ function GameController(
   const board = Gameboard();
   const fullBoard = board.getBoard();
   let gameActive = true;
+  const playerMsgHeadline = document.querySelector(".player-message");
 
   const players = [
     {
@@ -67,15 +68,13 @@ function GameController(
         activeSquare.updateValue(activePlayer.token);
         if (!checkWin()) {
           switchPlayer();
-          board.printBoard();
-          console.log(`It's ${activePlayer.name}'s turn.`);
+          playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
           return fullBoard;
         } else {
           return fullBoard;
         }
       } else {
-        board.printBoard();
-        console.log(`It's ${activePlayer.name}'s turn.`);
+        playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
         return fullBoard;
       }
     }
@@ -134,17 +133,57 @@ function GameController(
     }
   };
 
-  // Initialize game
-  board.printBoard();
-  console.log(`It's ${activePlayer.name}'s turn.`);
-
   return { switchPlayer, getActivePlayer, playRound, checkWin, checkLine };
 }
 
 const ScreenController = () => {
+  // Variables for Other Functions
   const board = Gameboard();
-  const game = GameController();
+  let game = GameController();
+
+  // DOM Elements
   const containerDiv = document.querySelector(".container");
+  const dialog = document.querySelector("dialog");
+  const boardBtns = document.querySelectorAll(".board-btn");
+  const startBtn = document.querySelector(".start-btn");
+  const resetBtn = document.querySelector(".reset-btn");
+  const submitBtn = document.querySelector(".submit-btn");
+  const playerMsgHeadline = document.querySelector(".player-message");
+
+  // Methods to pass into Event Listeners
+  // (1) Start Button
+  const openModal = () => dialog.showModal();
+
+  // (2) Submit Button (in dialog box)
+  const submitForm = (e) => {
+    e.preventDefault();
+
+    game = GameController(playerOne.value, playerTwo.value);
+    containerDiv.classList.remove("hidden");
+    dialog.close();
+    startBtn.setAttribute("disabled", false);
+    resetBtn.removeAttribute("disabled");
+    playerMsgHeadline.textContent = `It's ${
+      game.getActivePlayer().name
+    }'s turn.`;
+  };
+
+  // (3) Reset Button
+
+  // (4) Board Button
+
+  // Event Listeners
+  // (1) Start Button
+  const addStartBtnListeners = () => {
+    startBtn.removeEventListener("click", openModal);
+    startBtn.addEventListener("click", openModal);
+  };
+
+  // (2) Submit Button
+  const addSubmitBtnListener = () => {
+    submitBtn.removeEventListener("click", submitForm);
+    submitBtn.addEventListener("click", submitForm);
+  };
 
   const displayBoard = (board) => {
     // drop previous board
@@ -157,15 +196,13 @@ const ScreenController = () => {
       row.map((square, colIndex) => {
         const newBtn = document.createElement("button");
         newBtn.textContent = square.getValue();
-        newBtn.classList = `row-${rowIndex} col-${colIndex}`;
+        newBtn.classList = `row-${rowIndex} col-${colIndex} board-btn`;
         containerDiv.appendChild(newBtn);
       })
     );
 
     // Event Listeners
-    const btns = document.querySelectorAll("button");
-
-    btns.forEach((btn) =>
+    boardBtns.forEach((btn) =>
       btn.addEventListener("click", () => {
         const rowIndex = btn.classList[0].slice(-1);
         const colIndex = btn.classList[1].slice(-1);
@@ -174,11 +211,15 @@ const ScreenController = () => {
         displayBoard(updatedBoard);
       })
     );
+
+    addStartBtnListeners();
   };
 
   displayBoard(board.getBoard());
+  addStartBtnListeners();
+  addSubmitBtnListener();
 
-  return { displayBoard };
+  return { displayBoard, addStartBtnListeners };
 };
 
 ScreenController();

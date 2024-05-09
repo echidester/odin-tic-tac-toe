@@ -8,6 +8,21 @@
   align-items: center;
 }
 
-button {
+.board-btn {
   height: 200px;
+}
+
+.btns {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+h1,
+h2 {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
 }
