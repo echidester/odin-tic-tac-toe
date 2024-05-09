@@ -1,6 +1,6 @@
 .container {
   display: grid;
-  grid-template-columns: repeat(3, 200px);
+  grid-template-columns: repeat(3, 100px);
   gap: 5px;
   width: 100vw;
   padding-top: 50px;
@@ -9,7 +9,7 @@
 }
 
 .board-btn {
-  height: 200px;
+  height: 100px;
 }
 
 .btns {

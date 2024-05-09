@@ -63,20 +63,22 @@ function GameController(
   const setGameActive = () => (gameActive = !gameActive);
 
   const playRound = (row, col) => {
-    console.log(`playround: ${row}, ${col}`);
-
-    console.log(board.getBoard());
     const activeSquare = fullBoard[row][col];
-    console.log(activeSquare);
 
     if (activeSquare.getValue() === "") {
       activeSquare.updateValue(activePlayer.token);
-      if (!checkWin()) {
-        switchPlayer();
-        playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
+
+      if (checkTie()) {
+        playerMsgHeadline.textContent = `You tied!`;
         return fullBoard;
       } else {
-        return fullBoard;
+        if (!checkWin()) {
+          switchPlayer();
+          playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
+          return fullBoard;
+        } else {
+          return fullBoard;
+        }
       }
     } else {
       playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
@@ -131,6 +133,26 @@ function GameController(
       playerMsgHeadline.textContent = `${activePlayer.name} wins!`;
       gameActive = false;
       return fullBoard;
+    }
+  };
+
+  const checkTie = () => {
+    let blankSpaces = 0;
+
+    console.log(fullBoard[0][0].getValue());
+    // If all squares have values & checkWin is false, there is a tie!
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        blankSpaces =
+          fullBoard[i][j].getValue() === "" ? blankSpaces + 1 : blankSpaces + 0;
+      }
+    }
+
+    if (blankSpaces === 0) {
+      gameActive = false;
+      return true;
+    } else {
+      return false;
     }
   };
 
@@ -212,14 +234,26 @@ const ScreenController = () => {
       game.getGameActive() === false ? `Start Game` : `Reset Game`;
 
     // build current board
-    board.map((row, rowIndex) =>
-      row.map((square, colIndex) => {
-        const newBtn = document.createElement("button");
-        newBtn.textContent = square.getValue();
-        newBtn.classList = `row-${rowIndex} col-${colIndex} board-btn`;
-        containerDiv.appendChild(newBtn);
-      })
-    );
+    if (game.getGameActive()) {
+      board.map((row, rowIndex) =>
+        row.map((square, colIndex) => {
+          const newBtn = document.createElement("button");
+          newBtn.textContent = square.getValue();
+          newBtn.classList = `row-${rowIndex} col-${colIndex} board-btn`;
+          containerDiv.appendChild(newBtn);
+        })
+      );
+    } else {
+      board.map((row, rowIndex) =>
+        row.map((square, colIndex) => {
+          const newBtn = document.createElement("button");
+          newBtn.textContent = square.getValue();
+          newBtn.classList = `row-${rowIndex} col-${colIndex} board-btn`;
+          newBtn.setAttribute("disabled", false);
+          containerDiv.appendChild(newBtn);
+        })
+      );
+    }
 
     const boardBtns = document.querySelectorAll(".board-btn");
 
@@ -229,7 +263,6 @@ const ScreenController = () => {
         const rowIndex = btn.classList[0].slice(-1);
         const colIndex = btn.classList[1].slice(-1);
 
-        console.log(rowIndex, colIndex);
         updatedBoard = game.playRound(rowIndex, colIndex);
         displayBoard(updatedBoard);
       })
