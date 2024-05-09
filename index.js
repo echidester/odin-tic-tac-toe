@@ -1,26 +1,24 @@
 function Gameboard() {
   const rows = 3;
   const cols = 3;
-  const board = [];
+  let board = [];
 
   // Create a 3x3 board
-  for (let i = 0; i < rows; i++) {
-    board[i] = [];
-    for (let j = 0; j < cols; j++) {
-      board[i].push(Square());
-    }
-  }
 
-  const printBoard = () => {
-    const boardWithTokens = board.map((row) =>
-      row.map((square) => square.getValue())
-    );
-    console.log(boardWithTokens);
+  const setBoard = () => {
+    for (let i = 0; i < rows; i++) {
+      board[i] = [];
+      for (let j = 0; j < cols; j++) {
+        board[i].push(Square());
+      }
+    }
   };
 
   const getBoard = () => board;
 
-  return { printBoard, getBoard };
+  setBoard();
+
+  return { getBoard, setBoard };
 }
 
 function Square() {
@@ -39,7 +37,7 @@ function GameController(
 ) {
   const board = Gameboard();
   const fullBoard = board.getBoard();
-  let gameActive = true;
+  let gameActive = false;
   const playerMsgHeadline = document.querySelector(".player-message");
 
   const players = [
@@ -60,23 +58,29 @@ function GameController(
 
   const getActivePlayer = () => activePlayer;
 
-  const playRound = (row, col) => {
-    if (gameActive) {
-      const activeSquare = fullBoard[row][col];
+  const getGameActive = () => gameActive;
 
-      if (activeSquare.getValue() === "") {
-        activeSquare.updateValue(activePlayer.token);
-        if (!checkWin()) {
-          switchPlayer();
-          playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
-          return fullBoard;
-        } else {
-          return fullBoard;
-        }
-      } else {
+  const setGameActive = () => (gameActive = !gameActive);
+
+  const playRound = (row, col) => {
+    console.log(`playround: ${row}, ${col}`);
+
+    console.log(board.getBoard());
+    const activeSquare = fullBoard[row][col];
+    console.log(activeSquare);
+
+    if (activeSquare.getValue() === "") {
+      activeSquare.updateValue(activePlayer.token);
+      if (!checkWin()) {
+        switchPlayer();
         playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
         return fullBoard;
+      } else {
+        return fullBoard;
       }
+    } else {
+      playerMsgHeadline.textContent = `It's ${activePlayer.name}'s turn.`;
+      return fullBoard;
     }
   };
 
@@ -130,19 +134,26 @@ function GameController(
     }
   };
 
-  return { switchPlayer, getActivePlayer, playRound, checkWin, checkLine };
+  return {
+    switchPlayer,
+    getActivePlayer,
+    playRound,
+    checkWin,
+    checkLine,
+    getGameActive,
+    setGameActive,
+  };
 }
 
 const ScreenController = () => {
   // Variables for Other Functions
-  const board = Gameboard();
+  let board = Gameboard();
   let game = GameController();
 
   // DOM Elements
   const containerDiv = document.querySelector(".container");
   const dialog = document.querySelector("dialog");
   const startBtn = document.querySelector(".start-btn");
-  const resetBtn = document.querySelector(".reset-btn");
   const submitBtn = document.querySelector(".submit-btn");
   const playerMsgHeadline = document.querySelector(".player-message");
 
@@ -154,16 +165,23 @@ const ScreenController = () => {
   const submitForm = (e) => {
     e.preventDefault();
 
-    game = GameController(playerOne.value, playerTwo.value);
-    containerDiv.classList.remove("hidden");
-    dialog.close();
-    startBtn.setAttribute("disabled", false);
-    resetBtn.removeAttribute("disabled");
-    displayTurnMessage();
-  };
+    // Create a new, blank tic-tac-toe board
+    board.setBoard();
 
-  // (3) Reset Button
-  const resetGame = () => console.log("reset button clicked");
+    // Load the Game Controller with the correct player names
+    game = GameController(playerOne.value, playerTwo.value);
+    playerOne.value = "";
+    playerTwo.value = "";
+
+    // Close dialog box
+    dialog.close();
+
+    // Build all UI display elements
+    game.setGameActive();
+    containerDiv.classList.remove("hidden");
+    displayTurnMessage();
+    displayBoard(board.getBoard());
+  };
 
   // Event Listeners
   // (1) Start Button
@@ -178,12 +196,6 @@ const ScreenController = () => {
     submitBtn.addEventListener("click", submitForm);
   };
 
-  // (3) Reset Button
-  const addResetBtnListener = () => {
-    resetBtn.removeEventListener("click", resetGame);
-    resetBtn.addEventListener("click", resetGame);
-  };
-
   // Screen Controller Methods
   const displayTurnMessage = () => {
     playerMsgHeadline.textContent = `It's ${
@@ -196,6 +208,8 @@ const ScreenController = () => {
     let updatedBoard;
 
     containerDiv.innerHTML = "";
+    startBtn.textContent =
+      game.getGameActive() === false ? `Start Game` : `Reset Game`;
 
     // build current board
     board.map((row, rowIndex) =>
@@ -215,19 +229,18 @@ const ScreenController = () => {
         const rowIndex = btn.classList[0].slice(-1);
         const colIndex = btn.classList[1].slice(-1);
 
+        console.log(rowIndex, colIndex);
         updatedBoard = game.playRound(rowIndex, colIndex);
         displayBoard(updatedBoard);
       })
     );
 
     addStartBtnListeners();
-    addResetBtnListener();
   };
 
   displayBoard(board.getBoard());
   addStartBtnListeners();
   addSubmitBtnListener();
-  addResetBtnListener();
 
   return { displayBoard, addStartBtnListeners };
 };
