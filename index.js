@@ -104,9 +104,8 @@ function GameController(
         )
       ) {
         // if either of these checkLines evaluate to true, there is a winner
-        console.log(`For loop...${i}`);
-        board.printBoard();
-        console.log(`${activePlayer.name} wins!`);
+
+        playerMsgHeadline.textContent = `${activePlayer.name} wins!`;
         gameActive = false;
         return fullBoard;
       }
@@ -125,9 +124,7 @@ function GameController(
       )
     ) {
       // if either of these checkLines evaluate to true, there is a winner
-      console.log(`Diagonals...`);
-      board.printBoard();
-      console.log(`${activePlayer.name} wins!`);
+      playerMsgHeadline.textContent = `${activePlayer.name} wins!`;
       gameActive = false;
       return fullBoard;
     }
@@ -144,7 +141,6 @@ const ScreenController = () => {
   // DOM Elements
   const containerDiv = document.querySelector(".container");
   const dialog = document.querySelector("dialog");
-  const boardBtns = document.querySelectorAll(".board-btn");
   const startBtn = document.querySelector(".start-btn");
   const resetBtn = document.querySelector(".reset-btn");
   const submitBtn = document.querySelector(".submit-btn");
@@ -163,14 +159,11 @@ const ScreenController = () => {
     dialog.close();
     startBtn.setAttribute("disabled", false);
     resetBtn.removeAttribute("disabled");
-    playerMsgHeadline.textContent = `It's ${
-      game.getActivePlayer().name
-    }'s turn.`;
+    displayTurnMessage();
   };
 
   // (3) Reset Button
-
-  // (4) Board Button
+  const resetGame = () => console.log("reset button clicked");
 
   // Event Listeners
   // (1) Start Button
@@ -183,6 +176,19 @@ const ScreenController = () => {
   const addSubmitBtnListener = () => {
     submitBtn.removeEventListener("click", submitForm);
     submitBtn.addEventListener("click", submitForm);
+  };
+
+  // (3) Reset Button
+  const addResetBtnListener = () => {
+    resetBtn.removeEventListener("click", resetGame);
+    resetBtn.addEventListener("click", resetGame);
+  };
+
+  // Screen Controller Methods
+  const displayTurnMessage = () => {
+    playerMsgHeadline.textContent = `It's ${
+      game.getActivePlayer().name
+    }'s turn.`;
   };
 
   const displayBoard = (board) => {
@@ -201,6 +207,8 @@ const ScreenController = () => {
       })
     );
 
+    const boardBtns = document.querySelectorAll(".board-btn");
+
     // Event Listeners
     boardBtns.forEach((btn) =>
       btn.addEventListener("click", () => {
@@ -213,11 +221,13 @@ const ScreenController = () => {
     );
 
     addStartBtnListeners();
+    addResetBtnListener();
   };
 
   displayBoard(board.getBoard());
   addStartBtnListeners();
   addSubmitBtnListener();
+  addResetBtnListener();
 
   return { displayBoard, addStartBtnListeners };
 };
